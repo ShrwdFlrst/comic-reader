@@ -12,24 +12,51 @@ let pages
 let bookPath
 let currentPage = 0
 let advanceBy = 2
+let preloadCount = 4
 
 document.ondragover = document.ondrop = (ev) => {
     ev.preventDefault()
 }
 
-document.body.ondrop = (ev) => {
-    let file = copyToTemp(ev.dataTransfer.files[0].path)
-    fileDrop.hide()
-    ev.preventDefault()
-    alert(file)
-    let dirName = path.basename(file, path.extname(file))
-    bookPath = path.join(getTempDir(), dirName)
+document.body.addEventListener('drop', handleDrop)
 
-    extract(file, {dir: bookPath}, (err) => {
-        pages = fs.readdirSync(bookPath)
-        displayCurrentPage()
-    })
+$(document).keydown((e) => {
+    switch(e.which) {
+        case 37: // left
+            prevPage()
+            break;
 
+        case 39: // right
+            nextPage()
+            break;
+
+        case 83: // s
+            toggleViewPages()
+            break;
+
+        default: return; // exit this handler for other keys
+    }
+    e.preventDefault(); // prevent the default action (scroll / move caret)
+});
+
+function handleDrop(ev) {
+    document.body.removeEventListener('drop', handleDrop)
+
+    try {
+        let file = copyToTemp(ev.dataTransfer.files[0].path)
+        fileDrop.hide()
+        ev.preventDefault()
+        let dirName = path.basename(file, path.extname(file))
+        bookPath = path.join(getTempDir(), dirName)
+
+        extract(file, {dir: bookPath}, (err) => {
+            pages = fs.readdirSync(bookPath)
+            displayCurrentPage()
+        })
+    } catch (err) {
+        alert('Oops, something went wrong')
+        console.log(err)
+    }
 }
 
 pageLeft.on('click', (e) => {
@@ -59,21 +86,28 @@ function prevPage() {
 }
 
 function displayCurrentPage() {
+    pagesContainer.css('display', 'flex')
     pagesContainer.show()
     pageLeft.css('background-image', 'url(' + path.join(bookPath, pages[currentPage]) + ')');
+    pageLeft.text(currentPage + 1)
 
     if (pages.length > currentPage + 1) {
+        pageRight.text(currentPage + 2)
         pageRight.css('background-image', 'url(' + path.join(bookPath, pages[currentPage + 1]) + ')');
+    } else {
+        pageRight.text('')
+        pageRight.css('background-image', '')
     }
     preload()
 }
 
 function preload() {
-    const preloadCount = 2
-
     for (var i = 1; i <= preloadCount; i++) {
         if (pages.length > currentPage + i) {
             $("<img />").attr("src", path.join(bookPath, pages[currentPage + i]));
+        }
+        if (currentPage - i >= 0) {
+            $("<img />").attr("src", path.join(bookPath, pages[currentPage - i]));
         }
     }
 }
@@ -90,4 +124,22 @@ function copyToTemp(source) {
     fs.copyFileSync(source, destination)
 
     return destination
+}
+
+function toggleViewPages() {
+    if (advanceBy === 2) {
+        advanceBy = 1
+        pageLeft.removeClass('left')
+        pageLeft.addClass('single')
+        pageRight.hide()
+    } else {
+        if (currentPage > 0 && currentPage % 2 != 0) {
+            prevPage()
+        }
+
+        advanceBy = 2
+        pageLeft.addClass('left')
+        pageLeft.removeClass('single')
+        pageRight.show()
+    }
 }

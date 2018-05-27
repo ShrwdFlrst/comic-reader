@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <!--<meta http-equiv="Content-Security-Policy" content="script-src 'self'">-->
-    <title>Reader</title>
+    <title>Comic Reader</title>
     <style>
         body {
-            background: dimgray;
+            background: #1f1f1f;
+            font-family: sans-serif;
             margin: 0;
             padding: 0;
         }
@@ -14,27 +15,35 @@
         .file-drop {
             background: ghostwhite;
             border: 5px solid #ededed;
-            text-align: center;
+            box-sizing: border-box;
             display: flex;
-            width: 100%;
+            text-align: center;
+            height: 100vh;
+            width: 100vw;
         }
 
         .pages {
-            display: flex;
+            display: none;
             width: 100%;
         }
 
         .page {
             background: no-repeat center left;
             background-size: contain;
+            color: #ffffff;
             flex: 50%;
+            font-weight: bold;
             height: 100vh;
             width: 100vw;
         }
+
         .page.left {
-            background: no-repeat center right;
+            background-position: center right;
+        }
+
+        .single {
+            background: no-repeat center center;
             background-size: contain;
-            flex: 50%;
             height: 100vh;
             width: 100vw;
         }
@@ -44,24 +53,11 @@
 <div class="file-drop">Drop file here...</div>
 
 <div class="pages">
-    <div class="page left"></div>
-    <div class="page right"></div>
+    <div class="page left">0</div>
+    <div class="page right">1</div>
 </div>
 
-
-<!-- All of the Node.js APIs are available in this renderer process. -->
-We are using Node.js
-<script>document.write(process.versions.node)</script>
-,
-Chromium
-<script>document.write(process.versions.chrome)</script>
-,
-and Electron
-<script>document.write(process.versions.electron)</script>
-.
-
 <script>
-    // You can also require other files to run in this process
     require('./renderer.js')
 </script>
 </body>
