@@ -22,39 +22,54 @@ document.body.addEventListener('drop', handleDrop)
 
 $(document).keydown((e) => {
     switch(e.which) {
-        case 37: // left
+        case 37:
             prevPage()
             break;
 
-        case 39: // right
+        case 39:
             nextPage()
             break;
 
-        case 83: // s
+        case 83:
             toggleViewPages()
             break;
 
-        default: return; // exit this handler for other keys
+        default: return;
     }
-    e.preventDefault(); // prevent the default action (scroll / move caret)
+    e.preventDefault();
 });
 
 function handleDrop(ev) {
+    fileDrop.text('Loading ' + ev.dataTransfer.files[0].name + '...')
     document.body.removeEventListener('drop', handleDrop)
 
     try {
         let file = copyToTemp(ev.dataTransfer.files[0].path)
-        fileDrop.hide()
         ev.preventDefault()
         let dirName = path.basename(file, path.extname(file))
         bookPath = path.join(getTempDir(), dirName)
+        let filesExtractedCount = 0
 
-        extract(file, {dir: bookPath}, (err) => {
+        function onEntry(entry, file) {
+            filesExtractedCount++
+            fileDrop.text('Loading ' + Math.round((filesExtractedCount / file.entryCount) * 100) + '%')
+        }
+
+        extract(file, {dir: bookPath, onEntry: onEntry}, (err) => {
             pages = fs.readdirSync(bookPath)
+
+            if (pages.length === 0) {
+                fileDrop.text('Oops, something went wrong. Try again or use a different file.')
+                document.body.addEventListener('drop', handleDrop)
+                return
+            }
+
             displayCurrentPage()
+            fileDrop.hide()
         })
     } catch (err) {
-        alert('Oops, something went wrong')
+        fileDrop.text('Oops, something went wrong. Try again or use a different file.')
+        document.body.addEventListener('drop', handleDrop)
         console.log(err)
     }
 }
@@ -89,13 +104,11 @@ function displayCurrentPage() {
     pagesContainer.css('display', 'flex')
     pagesContainer.show()
     pageLeft.css('background-image', 'url(' + path.join(bookPath, pages[currentPage]) + ')');
-    pageLeft.text(currentPage + 1)
+    pageLeft.text(currentPage + 1 + '/' + pages.length)
 
     if (pages.length > currentPage + 1) {
-        pageRight.text(currentPage + 2)
         pageRight.css('background-image', 'url(' + path.join(bookPath, pages[currentPage + 1]) + ')');
     } else {
-        pageRight.text('')
         pageRight.css('background-image', '')
     }
     preload()
@@ -133,6 +146,7 @@ function toggleViewPages() {
         pageLeft.addClass('single')
         pageRight.hide()
     } else {
+        // Make sure odd pages are always on the left
         if (currentPage > 0 && currentPage % 2 != 0) {
             prevPage()
         }

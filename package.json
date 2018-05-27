@@ -1,18 +1,17 @@
 {
-  "name": "electron-quick-start",
-  "version": "1.0.0",
-  "description": "A minimal Electron application",
+  "name": "electron-comic-reader",
+  "version": "0.1.0",
+  "description": "A minimal CBZ/ZIP comic reader",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
   },
-  "repository": "https://github.com/electron/electron-quick-start",
+  "repository": "https://github.com/shrwdflrst/electron-comic-reader",
   "keywords": [
-    "Electron",
-    "quick",
-    "start",
-    "tutorial",
-    "demo"
+    "Comic",
+    "Comics",
+    "cbr",
+    "zip"
   ],
   "author": "GitHub",
   "license": "CC0-1.0",
