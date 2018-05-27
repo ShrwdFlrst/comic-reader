@@ -4,7 +4,6 @@ const temp = require('temp').track()
 const TMP_DIR_PREFIX = 'com.shrwdflrst.Comic'
 // Module to control application life.
 const app = electron.app
-const ipcRenderer = electron.ipcRenderer
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow
 
@@ -17,7 +16,7 @@ let mainWindow
 
 function createWindow() {
     // Create the browser window.
-    mainWindow = new BrowserWindow({width: 800, height: 600})
+    mainWindow = new BrowserWindow({width: 1024, height: 768})
 
     // and load the index.html of the app.
     mainWindow.loadURL(url.format({
@@ -27,7 +26,7 @@ function createWindow() {
     }))
 
     // Open the DevTools.
-    mainWindow.webContents.openDevTools()
+    // mainWindow.webContents.openDevTools()
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function () {
@@ -70,10 +69,10 @@ let tempDir
 function init() {
     tempDir = temp.mkdirSync(TMP_DIR_PREFIX)
     global.sharedObj = {tempDir: tempDir};
-    console.log('Created temp dir: ' + tempDir)
 }
 
 function cleanUp() {
     console.log('clean up')
-    console.log(temp.cleanupSync())
+    let c = temp.cleanupSync()
+    console.log(c)
 }

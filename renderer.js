@@ -1,42 +1,93 @@
-// This file is required by the index.html file and will
-// be executed in the renderer process for that window.
-// All of the Node.js APIs are available in this process.
-// window.$ = window.jQuery = require('jquery')
+window.$ = window.jQuery = require('jquery')
 const fs = require('fs')
 const path = require('path')
 const remote = require('electron').remote
-const tempDir = remote.getGlobal('sharedObj').tempDir
+const extract = require('extract-zip')
 
-console.log(tempDir);
+const fileDrop = $('.file-drop')
+const pageLeft = $('.page.left')
+const pageRight = $('.page.right')
+const pagesContainer = $('.pages')
+let pages
+let bookPath
+let currentPage = 0
+let advanceBy = 2
 
 document.ondragover = document.ondrop = (ev) => {
     ev.preventDefault()
 }
 
 document.body.ondrop = (ev) => {
-    let file = ev.dataTransfer.files[0].path;
-    let name = ev.dataTransfer.files[0].name;
+    let file = copyToTemp(ev.dataTransfer.files[0].path)
+    fileDrop.hide()
     ev.preventDefault()
-    let info = fs.statSync(file);
-    console.log(info)
-    fs.copyFileSync(file, path.join(tempDir, name))
+    alert(file)
+    let dirName = path.basename(file, path.extname(file))
+    bookPath = path.join(getTempDir(), dirName)
+
+    extract(file, {dir: bookPath}, (err) => {
+        pages = fs.readdirSync(bookPath)
+        displayCurrentPage()
+    })
+
 }
-//
-// $("html").on("dragover", function(event) {
-//     event.preventDefault();
-//     event.stopPropagation();
-//     // console.log('drag over');
-// });
-//
-// $("html").on("dragleave", function(event) {
-//     event.preventDefault();
-//     event.stopPropagation();
-//     // console.log('drag leave');
-// });
-//
-// $("html").on("drop", function(event) {
-//     event.preventDefault();
-//     event.stopPropagation();
-//     console.log(event.dataTransfer.files[0].path)
-//     console.log('dropped');
-// });
+
+pageLeft.on('click', (e) => {
+    prevPage()
+})
+
+pageRight.on('click', (e) => {
+    nextPage()
+})
+
+function nextPage() {
+    if (currentPage >= pages.length - advanceBy) {
+        return
+    }
+
+    currentPage += advanceBy
+    displayCurrentPage()
+}
+
+function prevPage() {
+    if (currentPage === 0) {
+        return
+    }
+
+    currentPage -= advanceBy
+    displayCurrentPage()
+}
+
+function displayCurrentPage() {
+    pagesContainer.show()
+    pageLeft.css('background-image', 'url(' + path.join(bookPath, pages[currentPage]) + ')');
+
+    if (pages.length > currentPage + 1) {
+        pageRight.css('background-image', 'url(' + path.join(bookPath, pages[currentPage + 1]) + ')');
+    }
+    preload()
+}
+
+function preload() {
+    const preloadCount = 2
+
+    for (var i = 1; i <= preloadCount; i++) {
+        if (pages.length > currentPage + i) {
+            $("<img />").attr("src", path.join(bookPath, pages[currentPage + i]));
+        }
+    }
+}
+
+function getTempDir() {
+    return remote.getGlobal('sharedObj').tempDir
+}
+
+function copyToTemp(source) {
+    let name = path.basename(source)
+    let tempDir = getTempDir()
+    let destination = path.join(tempDir, name)
+
+    fs.copyFileSync(source, destination)
+
+    return destination
+}

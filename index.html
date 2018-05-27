@@ -5,18 +5,50 @@
     <!--<meta http-equiv="Content-Security-Policy" content="script-src 'self'">-->
     <title>Reader</title>
     <style>
+        body {
+            background: dimgray;
+            margin: 0;
+            padding: 0;
+        }
+
         .file-drop {
-            border: 1px solid #ededed;
-            height: 250px;
-            margin: 0 auto;
-            padding-top: 100px;
+            background: ghostwhite;
+            border: 5px solid #ededed;
             text-align: center;
-            width: 400px;
+            display: flex;
+            width: 100%;
+        }
+
+        .pages {
+            display: flex;
+            width: 100%;
+        }
+
+        .page {
+            background: no-repeat center left;
+            background-size: contain;
+            flex: 50%;
+            height: 100vh;
+            width: 100vw;
+        }
+        .page.left {
+            background: no-repeat center right;
+            background-size: contain;
+            flex: 50%;
+            height: 100vh;
+            width: 100vw;
         }
     </style>
 </head>
 <body>
 <div class="file-drop">Drop file here...</div>
+
+<div class="pages">
+    <div class="page left"></div>
+    <div class="page right"></div>
+</div>
+
+
 <!-- All of the Node.js APIs are available in this renderer process. -->
 We are using Node.js
 <script>document.write(process.versions.node)</script>
